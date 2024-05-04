@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Trip Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, button {
+            padding: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .bike-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .bike-details input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .remove-bike {
+            background-color: #dc3545;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 5px;
+            width: 50px;
+            height: 30px;
+            text-align: center;
+        }
+        .remove-bike:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bike Trip Calculator</h1>
+    <div class="container">
+        <div id="bikeInputs"></div>
+
+        <label for="totalTrip">Total Trip Distance (km):</label>
+        <input type="number" id="totalTrip" required>
+
+        <label for="petrolPrice">Current Petrol Price:</label>
+        <input type="number" id="petrolPrice" step="0.01" required>
+
+        <button onclick="addBikeInputs()">Add Bike</button>
+        <button onclick="calculateCost()">Calculate</button>
+
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>Bike Name</th>
+                    <th>Mileage (km/l)</th>
+                    <th>Tank Size (liters)</th>
+                    <th>Refuel Times</th>
+                    <th>Petrol Cost</th>
+                    <th>Petrol Required (liters)</th>
+                    <th>Round Trip Cost</th>
+                </tr>
+            </thead>
+            <tbody id="resultTableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let bikeCount = 1;
+        const bikeInputs = [];
+
+        function addBikeInputs() {
+            const bikeInputsDiv = document.getElementById("bikeInputs");
+            const bikeDiv = document.createElement("div");
+            bikeDiv.classList.add("bike-details");
+            bikeDiv.innerHTML = `
+                <div>
+                    <label for="bikeName${bikeCount}">Bike Name:</label>
+                    <input type="text" id="bikeName${bikeCount}" required>
+                </div>
+                <div>
+                    <label for="bikeMileage${bikeCount}">Mileage (km/l):</label>
+                    <input type="number" id="bikeMileage${bikeCount}" step="0.01" required>
+                </div>
+                <div>
+                    <label for="bikeTankSize${bikeCount}">Tank Size (liters):</label>
+                    <input type="number" id="bikeTankSize${bikeCount}" step="0.01" required>
+                </div>
+                <button class="remove-bike" onclick="removeBike(${bikeCount})">Remove Bike</button>
+            `;
+            bikeInputsDiv.appendChild(bikeDiv);
+            bikeInputs.push({
+                name: `bikeName${bikeCount}`,
+                mileage: `bikeMileage${bikeCount}`,
+                tankSize: `bikeTankSize${bikeCount}`
+            });
+            bikeCount++;
+        }
+
+        function removeBike(index) {
+            const bikeInputsDiv = document.getElementById("bikeInputs");
+            const bikeDiv = bikeInputsDiv.children[index - 1];
+            bikeInputsDiv.removeChild(bikeDiv);
+            bikeInputs.splice(index - 1, 1);
+            bikeCount--;
+        }
+
+        function calculateCost() {
+            const totalTrip = parseFloat(document.getElementById("totalTrip").value);
+            const petrolPrice = parseFloat(document.getElementById("petrolPrice").value);
+            const resultTableBody = document.getElementById("resultTableBody");
+            resultTableBody.innerHTML = "";
+
+            for (let i = 0; i < bikeInputs.length; i++) {
+                const bikeName = document.getElementById(bikeInputs[i].name).value;
+                const bikeMileage = parseFloat(document.getElementById(bikeInputs[i].mileage).value);
+                const bikeTankSize = parseFloat(document.getElementById(bikeInputs[i].tankSize).value);
+
+                const refuelTimes = totalTrip / (bikeMileage * bikeTankSize);
+                const refuelTimesString = refuelTimes.toFixed(1); // Display only one float value
+                const petrolCost = (totalTrip / bikeMileage) * petrolPrice;
+                const petrolRequired = totalTrip / bikeMileage;
+                const roundTripCost = petrolCost * 2;
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${bikeName}</td>
+                    <td>${bikeMileage.toFixed(2)}</td>
+                    <td>${bikeTankSize.toFixed(2)}</td>
+                    <td>${refuelTimesString}</td>
+                    <td>$${petrolCost.toFixed(2)}</td>
+                    <td>${petrolRequired.toFixed(2)}</td>
+                    <td>$${roundTripCost.toFixed(2)}</td>
+                `;
+                resultTableBody.appendChild(row);
+            }
+        }
+    </script>
+</body>
+</html>
